@@ -1,8 +1,36 @@
-import { add } from './add'
+import { Client, Events, GatewayIntentBits } from 'discord.js'
+import { registerCommands } from './commands/register'
 
-const hello: string = 'hello'
+const token = ''
 
-console.log(hello)
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+})
 
-const result = add(2, 5)
-console.log(`result: ${result}`)
+registerCommands()
+
+client.once(Events.ClientReady, (readyClient) => {
+  console.log(`Ready! Logged in as ${readyClient.user.tag}`)
+})
+
+client.on(Events.MessageCreate, (message) => {
+  console.log(`message.content: ${message.content}`)
+  if (message.content === 'ping') {
+    message.reply('pong@@')
+  }
+})
+
+client.on(Events.InteractionCreate, (interaction) => {
+  console.log(interaction)
+  if (!interaction.isChatInputCommand()) {
+    return
+  }
+
+  interaction.reply('pong pong')
+})
+
+client.login(token)
