@@ -3,13 +3,13 @@ import {
   ChatInputCommandInteraction,
   SlashCommandBuilder,
 } from 'discord.js'
+import { SlashCommand } from '../types'
 
-export const commandPing = new SlashCommandBuilder()
-  .setName('ping')
-  .setDescription('Replies with Pong!')
-
-export async function execute(
-  interaction: ChatInputCommandInteraction<CacheType>,
-) {
-  await interaction.reply('Pong!')
+export const ping: SlashCommand = {
+  builder: new SlashCommandBuilder()
+    .setName('ping')
+    .setDescription('ping desc'),
+  async execute(interaction: ChatInputCommandInteraction<CacheType>) {
+    await interaction.reply('Pong Pong!@#@#')
+  },
 }

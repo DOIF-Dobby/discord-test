@@ -1,7 +1,13 @@
-import { Client, Events, GatewayIntentBits } from 'discord.js'
-import { registerCommands } from './commands/register'
+import {
+  Client,
+  Collection,
+  Events,
+  GatewayIntentBits,
+  MessageFlags,
+} from 'discord.js'
+import { registerCommands } from './commands/registry'
 
-const token = ''
+const token = process.env.DISCORD_BOT_TOKEN
 
 const client = new Client({
   intents: [
@@ -11,7 +17,9 @@ const client = new Client({
   ],
 })
 
-registerCommands()
+client.commands = new Collection()
+
+registerCommands(client)
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`)
@@ -24,13 +32,34 @@ client.on(Events.MessageCreate, (message) => {
   }
 })
 
-client.on(Events.InteractionCreate, (interaction) => {
-  console.log(interaction)
+client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) {
     return
   }
 
-  interaction.reply('pong pong')
+  const command = interaction.client.commands.get(interaction.commandName)
+
+  if (!command) {
+    console.error(`No command matching ${interaction.commandName} was found.`)
+    return
+  }
+
+  try {
+    await command.execute(interaction)
+  } catch (error) {
+    console.error(error)
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({
+        content: 'There was an error while executing this command!',
+        flags: MessageFlags.Ephemeral,
+      })
+    } else {
+      await interaction.reply({
+        content: 'There was an error while executing this command!',
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+  }
 })
 
 client.login(token)
